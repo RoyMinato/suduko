@@ -8,7 +8,7 @@
 body {
     display: flex;
     flex-direction: column;
-    background-color: bisque;
+    background-color: rgb(146, 166, 186);
     align-items: center;
 }
 
@@ -21,8 +21,9 @@ body {
 
 .grid {
     display: flex;
-    background-color: white;
+    background-color: whitesmoke;
     width: 700px;
     height: 700px;
-    margin: 50px;
+    margin-top: 30px;
+    flex-wrap: wrap;
 }
