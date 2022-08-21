@@ -10,7 +10,7 @@ function createSquareGrid (gridLength) {
         let blockLength = gridLength / 3;
 
         blockDiv.setAttribute("style", "width: " + blockLength + "px; height: " + blockLength + 
-                                    "px; display: flex; flex-wrap: wrap; outline: 1px solid black;");
+                                    "px; display: flex; flex-wrap: wrap; outline: 3px solid black;");
 
         for(let cellNum = 0; cellNum < 9; cellNum++) {
             const cellDiv = document.createElement('input');
@@ -25,7 +25,7 @@ function createSquareGrid (gridLength) {
                                         "px; outline: 1px solid gray; font-size: 40px; text-align: center;" +
                                         "color: blue;");
 
-            cellDiv.setAttribute("maxlength", "2");
+            cellDiv.setAttribute("maxlength", "1");
             blockDiv.appendChild(cellDiv);
         }
 
@@ -45,48 +45,88 @@ function rollRandom () {
 
 //From sudoku.com easy puzzles, 35 of 81 cells are pre-filled
 function prefillGrid () {
-    //Ensure each block has minimum of 1 pre-filled cell (no more than 7)
+    let lackingConditions;
+    let cellID;
+    let cellSet = new Set(); //to not pre-fill the same cell multiple times
+
     for (let i = 0; i < 34; i++) {
-        if(i <= 8) {
-            let lackingConditions = true;
-            while(lackingConditions) {
-                let cell = rollRandom();
-                let num = rollRandom() + 1;
-                let cellID = ((9 * i) + cell).toString();
+        lackingConditions = true;
+        while(lackingConditions) {
 
-                const affectedCell = document.getElementById(cellID);
-                affectedCell.setAttribute("value", num.toString());
-                affectedCell.style.color = 'black';
-                affectedCell.readOnly = true;
+            let cell = rollRandom();
+            let num = (rollRandom() + 1).toString(); // 1-9
+            let block = rollRandom();
 
-                //check row
-                if (checkRow(cellID, num) && checkCol(cellID, num)) {
-                    lackingConditions = false;
-                } else { //turn back into normal input cell (toggle readOnly, value, color attributes)
-                    affectedCell.setAttribute("value", "");
-                    affectedCell.style.color = 'blue';
-                    affectedCell.readOnly = false;
-                }
+            if(i <= 8){ //ensure all blocks have at least 1 pre-filled cell (7 max)
+                cellID = ((9 * i) + cell).toString();
+            } else {
+                cellID = ((9 * block) + cell).toString();
+            }
+
+            const affectedCell = document.getElementById(cellID);
+            affectedCell.setAttribute("value", num);
+            affectedCell.style.color = 'black';
+            affectedCell.readOnly = true;
+
+            if (checkRow(cellID, num) && checkCol(cellID, num) && checkBlock(cellID, num)) {
+                lackingConditions = false;
+                cellSet.add(cellID);
+            } else { //turn back into normal input cell
+                affectedCell.setAttribute("value", "");
+                affectedCell.style.color = 'blue';
+                affectedCell.readOnly = false;
             }
         }
+        
     }
 
 }
 
 
-//Check no duplicate numbers in block
-function checkBlock () {
+function findArray (cellID, config) {
+    for (let subArray = 0; subArray < config.length; subArray++) {
 
+        for (let i = 0; i < config[subArray].length; i++) {
+            if (config[subArray][i] === cellID) {
+                return config[subArray];
+            }
+        }       
+    }
 }
+
+
+function checkArray (cellID, arr, num) {
+    for (let i = 0; i < arr.length; i++) {
+
+        if(arr[i] != cellID) {
+            const neighborCell = document.getElementById(arr[i]);
+            if (neighborCell.value === num) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+
+//Check no duplicate numbers in block
+function checkBlock (cellID, num) {
+    let arr = findArray(cellID, blockIDs);
+    return checkArray(cellID, arr, num)
+}
+
 
 //Check no duplicate numbers in row
-function checkRow () {
-
+function checkRow (cellID, num) {
+    let arr = findArray(cellID, rowIDs);
+    return checkArray(cellID, arr, num);
 }
 
-//Check no duplicate numbers in col
-function checkCol () {
 
+//Check no duplicate numbers in col
+function checkCol (cellID, num) {
+    let arr = findArray(cellID, colIDs);
+    return checkArray(cellID, arr, num)
 }
 
 //when click new game/grid reset currCellID to "1" before calling createSquareGrid()
