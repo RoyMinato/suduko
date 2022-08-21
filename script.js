@@ -48,20 +48,32 @@ function prefillGrid () {
     let lackingConditions;
     let cellID;
     let cellSet = new Set(); //to not pre-fill the same cell multiple times
+    let alreadyPrefilled;
+    let cell;
+    let num;
+    let block;
 
-    for (let i = 0; i < 34; i++) {
+    for (let i = 0; i < 35; i++) {
         lackingConditions = true;
-        while(lackingConditions) {
+        alreadyPrefilled = true;
+        do {
+            do {
+                cell = rollRandom();
+                num = (rollRandom() + 1).toString(); // "1"-"9"
+                block = rollRandom();
 
-            let cell = rollRandom();
-            let num = (rollRandom() + 1).toString(); // 1-9
-            let block = rollRandom();
+                if(i <= 8){ //ensure all blocks have at least 1 pre-filled cell (7 max)
+                    cellID = ((9 * i) + cell).toString();
+                } else {
+                    cellID = ((9 * block) + cell).toString();
+                }
 
-            if(i <= 8){ //ensure all blocks have at least 1 pre-filled cell (7 max)
-                cellID = ((9 * i) + cell).toString();
-            } else {
-                cellID = ((9 * block) + cell).toString();
-            }
+                if (cellSet.has(cellID)) {
+                    alreadyPrefilled = true;
+                } else {
+                    alreadyPrefilled = false;
+                }
+            } while(alreadyPrefilled);
 
             const affectedCell = document.getElementById(cellID);
             affectedCell.setAttribute("value", num);
@@ -76,7 +88,8 @@ function prefillGrid () {
                 affectedCell.style.color = 'blue';
                 affectedCell.readOnly = false;
             }
-        }
+            
+        } while(lackingConditions);
         
     }
 
